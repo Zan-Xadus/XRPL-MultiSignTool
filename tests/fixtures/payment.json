@@ -1,0 +1,17 @@
+{
+  "TransactionType": "Payment",
+  "Account": "TESTNET_SOURCE_ACCOUNT_PLACEHOLDER",
+  "Destination": "TESTNET_DESTINATION_ACCOUNT_PLACEHOLDER",
+  "Amount": "1",
+  "Fee": "10",
+  "Sequence": 1,
+  "LastLedgerSequence": 99999999,
+  "Memos": [
+    {
+      "Memo": {
+        "MemoType": "SmokeTest",
+        "MemoData": "ComposeFixture"
+      }
+    }
+  ]
+}
