@@ -1,0 +1,11 @@
+{
+  "fixtureName": "approval-list-2-of-3",
+  "network": "testnet",
+  "owner": "TESTNET_OWNER_PLACEHOLDER",
+  "requiredWeight": 2,
+  "participants": [
+    { "account": "TESTNET_PARTICIPANT_ONE", "weight": 1 },
+    { "account": "TESTNET_PARTICIPANT_TWO", "weight": 1 },
+    { "account": "TESTNET_PARTICIPANT_THREE", "weight": 1 }
+  ]
+}

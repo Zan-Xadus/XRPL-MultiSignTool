@@ -1,0 +1,18 @@
+{
+  "fixtureName": "combine-2-of-3",
+  "network": "testnet",
+  "account": "TESTNET_OWNER_ACCOUNT_PLACEHOLDER",
+  "requiredWeight": 2,
+  "approvals": [
+    {
+      "account": "TESTNET_PARTICIPANT_ONE",
+      "weight": 1,
+      "signedTransaction": "SIGNED_TX_HEX_PARTICIPANT_1_PLACEHOLDER"
+    },
+    {
+      "account": "TESTNET_PARTICIPANT_TWO",
+      "weight": 1,
+      "signedTransaction": "SIGNED_TX_HEX_PARTICIPANT_2_PLACEHOLDER"
+    }
+  ]
+}
