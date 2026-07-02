@@ -17,7 +17,32 @@ Get yourself the most recent release from https://github.com/WietseWind/XRPL-Mul
 Or run in development mode / build your own package:
 
 ## Project setup
-Start by installing the dependencies:
+This project uses a legacy Vue 2 / Webpack 4 toolchain. To reproduce the
+existing build without dependency updates, use Node.js 12.22.12 with npm 6.
+
+If you use `nvm`, run:
+
+```
+nvm install
+nvm use
+npm install -g npm@6.14.16
+```
+
+Confirm the expected versions:
+
+```
+node --version
+npm --version
+```
+
+Expected:
+
+```
+v12.22.12
+6.14.16
+```
+
+Then install the dependencies:
 
 ```
 npm install
