@@ -121,8 +121,7 @@
 <script>
 import VueJsonPretty from 'vue-json-pretty'
 import * as XRPLAccountLib from 'xrpl-accountlib'
-
-const rippleCodec = require('ripple-binary-codec')
+import { decodeTransactionHex, extractExistingSigners, prepareRawTxData, removeSignersForDisplay, removeSingleSignFields } from '../helpers/transactions'
 
 export default {
   name: 'TxCombine',
@@ -373,18 +372,17 @@ export default {
       this.clear()
 
       try {
-        this.txData = rippleCodec.decode(this.tx.trim().toUpperCase())
+        this.txData = decodeTransactionHex(this.tx.trim().toUpperCase())
         this.renderTransactionMemos()
 
         // Don't show and remove before composing rawTxData for next signature
-        if (typeof this.txData.SigningPubKey !== 'undefined') delete this.txData.SigningPubKey
-        if (typeof this.txData.TxnSignature !== 'undefined') delete this.txData.TxnSignature
+        removeSingleSignFields(this.txData)
 
-        const clonedTxData = JSON.parse(JSON.stringify(this.txData))
+        const clonedTxData = prepareRawTxData(this.txData)
         Object.assign(this.rawTxData, clonedTxData)
 
         // Only remove after composing the rawTxData for next signature, so only don't show
-        if (typeof this.txData.Signers !== 'undefined') delete this.txData.Signers
+        removeSignersForDisplay(this.txData)
 
         if (typeof clonedTxData.Signers === 'undefined' || !Array.isArray(clonedTxData.Signers) || clonedTxData.Signers.length < 1) {
           this.setError(`Transaction doesn't contain (MultiSign) signatures.`)
@@ -395,7 +393,7 @@ export default {
           blob: this.tx.trim().toUpperCase(),
           json: clonedTxData,
           jsonHex: Buffer.from(JSON.stringify(this.txData), 'utf-8').toString('base64'),
-          signers: clonedTxData.Signers.map(s => { return s.Signer.Account })
+          signers: extractExistingSigners(clonedTxData)
         })
         if (!hexAdded) {
           return

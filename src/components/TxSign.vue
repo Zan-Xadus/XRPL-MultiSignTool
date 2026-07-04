@@ -143,8 +143,7 @@
 <script>
 import VueJsonPretty from 'vue-json-pretty'
 import Sign from './Sign.vue'
-
-const rippleCodec = require('ripple-binary-codec')
+import { decodeTransactionHex, extractExistingSigners, prepareRawTxData, removeSignersForDisplay, removeSingleSignFields } from '../helpers/transactions'
 
 export default {
   name: 'TxSign',
@@ -249,19 +248,16 @@ export default {
       this.clear()
 
       try {
-        this.txData = rippleCodec.decode(this.tx.trim().toUpperCase())
+        this.txData = decodeTransactionHex(this.tx.trim().toUpperCase())
 
         // Don't show and remove before composing rawTxData for next signature
-        if (typeof this.txData.SigningPubKey !== 'undefined') delete this.txData.SigningPubKey
-        if (typeof this.txData.TxnSignature !== 'undefined') delete this.txData.TxnSignature
+        removeSingleSignFields(this.txData)
 
-        Object.assign(this.rawTxData, JSON.parse(JSON.stringify(this.txData)))
-        if (typeof this.rawTxData.Signers !== 'undefined') {
-          this.existingSigners = this.rawTxData.Signers.map(s => { return s.Signer.Account }).sort()
-        }
+        Object.assign(this.rawTxData, prepareRawTxData(this.txData))
+        this.existingSigners = extractExistingSigners(this.rawTxData)
 
         // Only remove after composing the rawTxData for next signature, so only don't show
-        if (typeof this.txData.Signers !== 'undefined') delete this.txData.Signers
+        removeSignersForDisplay(this.txData)
 
         if (typeof this.txData.Account === 'undefined') {
           this.setError('No "Account" found in the decoded transaction.')
