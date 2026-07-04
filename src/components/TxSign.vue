@@ -143,6 +143,7 @@
 <script>
 import VueJsonPretty from 'vue-json-pretty'
 import Sign from './Sign.vue'
+import { isHex, validateLastLedgerSequence, validateSequence } from '../helpers/validation'
 
 const rippleCodec = require('ripple-binary-codec')
 
@@ -157,7 +158,7 @@ export default {
       return this.$env.rippled.connected && this.$env.rippled.ledger
     },
     txIsHex () {
-      return this.tx.trim().toUpperCase().match(/^[A-F0-9]+$/)
+      return isHex(this.tx)
     },
     fullySigned () {
       const signerList = this.accountData.signer_lists[0].SignerEntries.map(e => { return e.SignerEntry.Account }).sort()
@@ -266,8 +267,11 @@ export default {
         if (typeof this.txData.Account === 'undefined') {
           this.setError('No "Account" found in the decoded transaction.')
         } else {
-          if (typeof this.txData.LastLedgerSequence !== 'undefined' && this.$env.rippled.ledger.ledger_index && this.txData.LastLedgerSequence < this.$env.rippled.ledger.ledger_index) {
-            this.setError(`Transaction LastLedgerSequence already passed (${this.txData.LastLedgerSequence} < ${this.$env.rippled.ledger.ledger_index})`)
+          const lastLedgerSequenceError = validateLastLedgerSequence(this.txData, this.$env.rippled.ledger.ledger_index, (lastLedgerSequence, ledgerIndex) => {
+            return `Transaction LastLedgerSequence already passed (${lastLedgerSequence} < ${ledgerIndex})`
+          })
+          if (lastLedgerSequenceError) {
+            this.setError(lastLedgerSequenceError)
             return
           }
 
@@ -284,8 +288,9 @@ export default {
             } else {
               if (accountInfo.account_data.signer_lists && accountInfo.account_data.signer_lists.length > 0) {
                 this.accountData = accountInfo.account_data
-                if (typeof this.accountData.Sequence !== 'undefined' && typeof this.txData.Sequence !== 'undefined' && this.accountData.Sequence > this.txData.Sequence) {
-                  this.setError('Expired. Account Sequence is higher than transaction Sequence')
+                const sequenceError = validateSequence(this.txData, this.accountData, 'Expired. Account Sequence is higher than transaction Sequence')
+                if (sequenceError) {
+                  this.setError(sequenceError)
                 }
               } else {
                 this.setError(`Account isn't setup for multisiging (no signer list present)`)

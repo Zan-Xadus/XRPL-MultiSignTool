@@ -172,6 +172,7 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/keymap/sublime.js'
 
 import Sign from './Sign.vue'
+import { validateDestinationTag, validateFee, validateLastLedgerSequence, validateSequence } from '../helpers/validation'
 import * as XRPLAccountLib from 'xrpl-accountlib'
 
 export default {
@@ -324,20 +325,12 @@ export default {
       this.clearSignedTxData()
 
       // Some preliminary checks
-      if (typeof this.transaction.json.Fee !== 'undefined' && typeof this.transaction.json.Fee !== 'string') {
-        this.transaction.signed.error = '"Fee" field should be string, representing a value in Drops'
-        return
-      }
-      if (typeof this.transaction.json.DestinationTag !== 'undefined' && typeof this.transaction.json.DestinationTag !== 'number') {
-        this.transaction.signed.error = '"DestinationTag" field should be integer or left out'
-        return
-      }
-      if (typeof this.transaction.json.Sequence !== 'undefined' && typeof this.accountData.Sequence !== 'undefined' && this.transaction.json.Sequence < this.accountData.Sequence) {
-        this.transaction.signed.error = 'Transaction Sequence is already expired (account Sequence is greater)'
-        return
-      }
-      if (typeof this.transaction.json.LastLedgerSequence !== 'undefined' && this.$env.rippled.ledger.ledger_index && this.transaction.json.LastLedgerSequence < this.$env.rippled.ledger.ledger_index) {
-        this.transaction.signed.error = `Transaction LastLedgerSequence already passed (${this.$env.rippled.ledger.ledger_index})`
+      const validationError = validateFee(this.transaction.json) ||
+        validateDestinationTag(this.transaction.json) ||
+        validateSequence(this.transaction.json, this.accountData, 'Transaction Sequence is already expired (account Sequence is greater)') ||
+        validateLastLedgerSequence(this.transaction.json, this.$env.rippled.ledger.ledger_index, `Transaction LastLedgerSequence already passed (${this.$env.rippled.ledger.ledger_index})`)
+      if (validationError) {
+        this.transaction.signed.error = validationError
         return
       }
 
